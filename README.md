@@ -110,6 +110,3 @@ except MisrajAPIError as e:
     print(f"Server error: {e.status_code}")
 ```
 
-## Support
-
-If you have any issues, please contact `support@misraj.ai`.
