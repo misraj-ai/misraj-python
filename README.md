@@ -38,7 +38,7 @@ response = embeddings_service.create(input="Hello, misraj.ai!")
 print(response.data[0].embedding)
 
 # Batch Embeddings
-batch_response = embeddings_service.batch_create(inputs=[
+batch_response = embeddings_service.create(input=[
     "This is the first sentence.",
     "This is the second sentence."
 ])
@@ -49,7 +49,7 @@ ocr_res = ocr_service.extract(image="document.jpg")
 print(ocr_res.result.text)
 
 # Basser OCR: Batch Image Extraction
-batch_ocr_res = ocr_service.batch_extract(images=[
+batch_ocr_res = ocr_service.extract(image=[
     "document1.png",
     b"raw_bytes...",
     "document2.jpg"
@@ -75,14 +75,14 @@ async def main():
         embed_service = AsyncEmbeddingsService(client)
         ocr_service = AsyncOCRService(client)
 
-        batch_embed_res = await embed_service.batch_create(
-            inputs=["Concurrency is fast!", "Async batching is optimal."]
+        batch_embed_res = await embed_service.create(
+            input=["Concurrency is fast!", "Async batching is optimal."]
         )
         print(batch_embed_res)
 
         # Basser OCR Async Batch Extration
-        batch_ocr_res = await ocr_service.batch_extract(
-            images=["receipt_amount.png", "invoice.pdf"]
+        batch_ocr_res = await ocr_service.extract(
+            image=["receipt_amount.png", "invoice.pdf"]
         )
         for r in batch_ocr_res.results:
             print(r.text)

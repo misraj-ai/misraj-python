@@ -43,7 +43,7 @@ class OCRResult(BaseModel):
 
 class OCRResponse(BaseModel):
     """Standard response from the Basser OCR endpoint for a single image."""
-    result: OCRResult
+    results: List[OCRResult]
     model: str
 
 
