@@ -1,9 +1,11 @@
 from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 
+
 # ---------------------------------------------------------
 # Embeddings Models
 # ---------------------------------------------------------
+
 
 class EmbeddingRequest(BaseModel):
     """Payload for creating text embeddings."""
@@ -13,11 +15,13 @@ class EmbeddingRequest(BaseModel):
     model: str = Field(..., description="The model to use for embedding.")
     dimensions: Optional[int] = Field(None, description="Optional dimensions to output.")
 
+
 class EmbeddingData(BaseModel):
     """Holds a single embedding vector and its index within a batch."""
     embedding: List[float]
     index: int
     object: str = "embedding"
+
 
 class EmbeddingResponse(BaseModel):
     """Response returned from the embeddings endpoint."""
@@ -25,6 +29,7 @@ class EmbeddingResponse(BaseModel):
     model: str
     usage: Optional[dict] = None
     object: str = "list"
+
 
 # ---------------------------------------------------------
 # OCR (Basser) Models
@@ -35,10 +40,12 @@ class OCRResult(BaseModel):
     text: str
     confidence: Optional[float] = None
 
+
 class OCRResponse(BaseModel):
     """Standard response from the Basser OCR endpoint for a single image."""
     result: OCRResult
     model: str
+
 
 class BatchOCRResponse(BaseModel):
     """Response from the Basser OCR endpoint for a batch of images."""

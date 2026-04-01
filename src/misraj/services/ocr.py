@@ -3,14 +3,19 @@ from typing import List, Union, Tuple, Any
 from .base import BaseService, AsyncBaseService
 from ..types import OCRResponse, BatchOCRResponse
 from ..utils.pdf import convert_pdf_to_images
+from ..utils.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 FileTypes = Union[
-    str, 
-    pathlib.Path, 
-    bytes, 
-    Tuple[str, Union[bytes, Any]], 
+    str,
+    pathlib.Path,
+    bytes,
+    Tuple[str, Union[bytes, Any]],
     Tuple[str, Union[bytes, Any], str]
 ]
+
 
 def _is_pdf(file_input: FileTypes) -> bool:
     """Helper to detect if a file input is a PDF by extension or magic bytes."""
@@ -25,6 +30,7 @@ def _is_pdf(file_input: FileTypes) -> bool:
             return True
     return False
 
+
 def _flatten_images(images: List[FileTypes]) -> List[FileTypes]:
     """Flattens a list of inputs, expanding PDFs into multiple individual JPEG pages."""
     flattened = []
@@ -36,12 +42,13 @@ def _flatten_images(images: List[FileTypes]) -> List[FileTypes]:
                 pdf_bytes = img[1]
             else:
                 pdf_bytes = img
-            
+
             page_images = convert_pdf_to_images(pdf_bytes)
             flattened.extend(page_images)
         else:
             flattened.append(img)
     return flattened
+
 
 def _prepare_file(file_input: FileTypes) -> Tuple[str, Any, str]:
     """Helper to unify file inputs into a format httpx accepts."""
@@ -61,16 +68,21 @@ def _prepare_file(file_input: FileTypes) -> Tuple[str, Any, str]:
 class OCRService(BaseService):
     """Synchronous Basser OCR service."""
 
-    def extract(self, image: FileTypes, model: str = "misraj-basser") -> OCRResponse:
+    def extract(self, image: FileTypes, model: str = "misraj-basser") -> Union[OCRResponse, BatchOCRResponse]:
         """
         Extract text from a single image using the Basser model.
-        If a PDF is provided, only the first page is extracted. Use `batch_extract` for full PDFs.
+        If a PDF is provided and it has more than one page, it will automatically upgrade
+        to a batch extraction and return a BatchOCRResponse.
         """
         if _is_pdf(image):
             flattened = _flatten_images([image])
             if not flattened:
                 raise ValueError("The provided PDF contains no pages.")
-            image = flattened[0]
+            if len(flattened) > 1:
+                logger.warning("The provided PDF contains multiple pages. We are using the Batch mode by default.")
+                return self.batch_extract(images=flattened, model=model)  # Route explicitly to batch
+            else:
+                image = flattened[0]
 
         files = {"image": _prepare_file(image)}
         data = {"model": model}
@@ -90,7 +102,7 @@ class OCRService(BaseService):
         flattened = _flatten_images(images)
         for img in flattened:
             files.append(("images", _prepare_file(img)))
-            
+
         data = {"model": model}
         response_data = self._client.request(
             "POST",
@@ -104,16 +116,21 @@ class OCRService(BaseService):
 class AsyncOCRService(AsyncBaseService):
     """Asynchronous Basser OCR service."""
 
-    async def extract(self, image: FileTypes, model: str = "misraj-basser") -> OCRResponse:
+    async def extract(self, image: FileTypes, model: str = "misraj-basser") -> Union[OCRResponse, BatchOCRResponse]:
         """
         Extract text from a single image asynchronously using the Basser model.
-        If a PDF is provided, only the first page is extracted. Use `batch_extract` for full PDFs.
+        If a PDF is provided and it has more than one page, it will automatically upgrade
+        to a batch extraction and return a BatchOCRResponse.
         """
         if _is_pdf(image):
             flattened = _flatten_images([image])
             if not flattened:
                 raise ValueError("The provided PDF contains no pages.")
-            image = flattened[0]
+            if len(flattened) > 1:
+                logger.warning("The provided PDF contains multiple pages. We are using the Batch mode by default.")
+                return await self.batch_extract(images=flattened, model=model)
+            else:
+                image = flattened[0]
 
         files = {"image": _prepare_file(image)}
         data = {"model": model}
@@ -133,7 +150,7 @@ class AsyncOCRService(AsyncBaseService):
         flattened = _flatten_images(images)
         for img in flattened:
             files.append(("images", _prepare_file(img)))
-            
+
         data = {"model": model}
         response_data = await self._client.request(
             "POST",

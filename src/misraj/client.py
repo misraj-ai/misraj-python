@@ -4,6 +4,9 @@ from typing import Any, Optional
 from .errors import AuthenticationError, RateLimitError, APIConnectionError, MisrajAPIError
 from .utils import get_api_key_from_environment
 from .configs.constant import BASE_URL
+from .utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class Client:
@@ -15,7 +18,7 @@ class Client:
     def __init__(
             self,
             api_key: Optional[str] = None,
-            base_url: str = BASE_URL,
+            base_url: Optional[str] = None,
             timeout: float = 60.0,
             max_retries: int = 2
     ):
@@ -24,7 +27,7 @@ class Client:
             raise AuthenticationError(
                 "API key must be provided explicitly or set via MISRAJ_API_KEY environment variable.")
 
-        self.base_url = base_url.rstrip("/")
+        self.base_url = base_url.rstrip("/") or BASE_URL
 
         # We rely on httpx simple retry transport if needed or just handle manually. Let's use simple manual logic if needed.
         self.max_retries = max_retries
@@ -96,7 +99,7 @@ class AsyncClient:
     def __init__(
             self,
             api_key: Optional[str] = None,
-            base_url: str = BASE_URL,
+            base_url: Optional[str] = None,
             timeout: float = 60.0,
             max_retries: int = 2
     ):
@@ -105,7 +108,7 @@ class AsyncClient:
             raise AuthenticationError(
                 "API key must be provided explicitly or set via MISRAJ_API_KEY environment variable.")
 
-        self.base_url = base_url.rstrip("/")
+        self.base_url = base_url.rstrip("/") or BASE_URL
         self.max_retries = max_retries
 
         self._client = httpx.AsyncClient(
