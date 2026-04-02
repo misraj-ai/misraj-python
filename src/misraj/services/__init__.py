@@ -1,9 +1,9 @@
-from .embeddings import EmbeddingsService, AsyncEmbeddingsService
+from .embeddings import EmbeddingService, AsyncEmbeddingService
 from .ocr import OCRService, AsyncOCRService
 
 __all__ = [
-    "EmbeddingsService",
-    "AsyncEmbeddingsService",
+    "EmbeddingService",
+    "AsyncEmbeddingService",
     "OCRService",
     "AsyncOCRService"
 ]

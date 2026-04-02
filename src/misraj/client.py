@@ -1,9 +1,8 @@
-import os
 import httpx
-from typing import Optional, Any
+from typing import Optional
 from .exceptions import AuthenticationError, handle_http_error
 from .configs.settings import get_api_key_from_environment
-from .configs.constant import BASE_URL, DEFAULT_TIMEOUT, MAX_RETRIES, POLL_INTERVAL
+from .configs.constant import BASE_URL, DEFAULT_TIMEOUT
 
 
 def _resolve_api_key(api_key: Optional[str]) -> str:
@@ -16,7 +15,9 @@ def _resolve_api_key(api_key: Optional[str]) -> str:
 def _build_headers(api_key: str) -> dict:
     return {
         "x-api-key": api_key,
-        "Authorization": f"Bearer {api_key}"
+        "Authorization": f"Bearer {api_key}",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
     }
 
 
